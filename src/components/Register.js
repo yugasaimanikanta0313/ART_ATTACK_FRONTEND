@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock, FaCamera } from 'react-icons/fa';
 import { Button, CircularProgress } from '@mui/material';
+import { registerUser } from '../services/api'; // Import the registerUser function
 
 const Register = () => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
@@ -22,7 +22,7 @@ const Register = () => {
     setErrorMessage('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage('');
@@ -36,23 +36,18 @@ const Register = () => {
       data.append('profilePic', profilePic);
     }
 
-    axios.post('/register', data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-      .then(response => {
-        console.log(response.data);
-        setSuccessMessage('Registration successful! Redirecting...');
-        setTimeout(() => {
-          navigate('/verify');
-        }, 2000);
-      })
-      .catch(error => {
-        console.error('There was an error!', error);
-        setErrorMessage('Registration failed. Please check your details or try again.');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    try {
+      const response = await registerUser(data); // Use the registerUser function from api.js
+      console.log(response);
+      setSuccessMessage('Registration successful! Redirecting...');
+      setTimeout(() => {
+        navigate('/verify');
+      }, 2000);
+    } catch (error) {
+      setErrorMessage(error.message || 'Registration failed. Please check your details or try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,7 +55,6 @@ const Register = () => {
       <style>
         {`
           @import url('https://fonts.googleapis.com/css?family=Roboto:400,700');
-
           * {
             box-sizing: border-box;
             margin: 0;
